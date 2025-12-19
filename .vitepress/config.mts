@@ -1,8 +1,26 @@
 import { defineConfig } from "vitepress";
 
+function getBase() {
+  // Cloudflare Pages 环境变量
+  if (process.env.CF_PAGES) {
+    return "/";
+  }
+  // GitHub Pages 环境变量
+  if (process.env.GITHUB_PAGES) {
+    return "/fileview/";
+  }
+  // 默认判断（通过 URL）
+  if (typeof window !== "undefined") {
+    return window.location.hostname.includes("github.io")
+      ? "/fileview/"
+      : "/";
+  }
+  return "/";
+}
+
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-  base: "/fileview/",
+  base: getBase(),
   cleanUrls: true,
   outDir: "./dist",
   srcExclude: ["**/README.md", "**/TODO.md"],

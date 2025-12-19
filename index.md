@@ -4,7 +4,7 @@ layout: home
 
 hero:
   name: "BaseMetas Fileview"
-  text: "开源文件预览系统"
+  text: "在线文件预览解决方案"
   tagline: 支持在线预览超过200种文件，API调用简单快捷，支持独立部署
   actions:
     - theme: brand

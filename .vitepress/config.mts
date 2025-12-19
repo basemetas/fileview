@@ -11,9 +11,7 @@ function getBase() {
   }
   // 默认判断（通过 URL）
   if (typeof window !== "undefined") {
-    return window.location.hostname.includes("github.io")
-      ? "/fileview/"
-      : "/";
+    return window.location.hostname.includes("github.io") ? "/fileview/" : "/";
   }
   return "/";
 }
@@ -25,8 +23,9 @@ export default defineConfig({
   outDir: "./dist",
   srcExclude: ["**/README.md", "**/TODO.md"],
   lang: "zh-CN",
-  title: "文件预览",
-  description: "文件预览，office专家。部署简单，即开即用",
+  title: "开源在线文件预览 - BaseMetas Fileview",
+  description:
+    "开源在线文件预览，支持office文件预览，word、excel、ppt在线预览。部署简单，即开即用",
   head: [
     ["meta", { name: "baidu-site-verification", content: "codeva-rt8FUjktiP" }],
     [
@@ -42,6 +41,7 @@ export default defineConfig({
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     logo: "",
+    siteTitle: "首页标题",
     search: {
       provider: "local",
       options: {},

@@ -1,0 +1,15 @@
+{
+    "recommendedPage": "https://moqisoft.github.io/docs/product/example",
+    "siderAds": [
+        {
+            "image": "https://www.baidu.com/img/PCtm_d9c8750bed0b3c7d089fa7d55720d6cf.png",
+            "title": "baidu",
+            "href": "https://baidu.com"
+        },
+        {
+            "image": "https://www.baidu.com/img/PCtm_d9c8750bed0b3c7d089fa7d55720d6cf.png",
+            "title": "bing",
+            "href": "https://bing.com"
+        }
+    ]
+}

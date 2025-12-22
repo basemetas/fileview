@@ -87,3 +87,8 @@ html {
   white-space: pre-wrap;
   word-wrap: break-word;
 }
+
+/* 缩小首段与标题间距 */
+.vp-doc > p:first-of-type {
+  margin-bottom: 16px;
+}

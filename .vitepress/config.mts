@@ -56,17 +56,26 @@ export default defineConfig({
     sidebar: {
       "/docs/": [
         {
-          text: "快速上手",
+          text: "产品介绍",
           collapsed: false,
           items: [
             { text: "产品介绍", link: "/docs/product/summary" },
             { text: "架构介绍", link: "/docs/product/architecture" },
             { text: "支持格式", link: "/docs/product/formats" },
             { text: "应用场景", link: "/docs/product/scenarios" },
-            { text: "接入方式", link: "/docs/install/Integration" },
-            { text: "安全设置", link: "/docs/product/changelog" },
-            { text: "字体安装", link: "/docs/product/example" },
-            { text: "常见问题", link: "/docs/product/faq" },
+            { text: "更新日志", link: "/docs/product/changelog" },
+          ],
+        },
+        {
+          text: "快速上手",
+          collapsed: false,
+          items: [
+            { text: "安装部署", link: "/docs/install/docker" },
+            { text: "接入方式", link: "/docs/feature/integration" },
+            { text: "安全设置", link: "/docs/feature/security" },
+            { text: "字体安装", link: "/docs/feature/fonts" },
+            { text: "性能调优", link: "/docs/feature/performance" },
+            { text: "常见问题", link: "/docs/feature/faq" },
           ],
         },
       ],

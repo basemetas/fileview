@@ -16,10 +16,10 @@ hero:
       link: /docs/product/summary
 
 features:
-  - title: 在线预览
-    details: 支持文字/表格/演示/PDF等40+ 文档格式<br>超 1000+ 功能强大的文档 Web SDK<br>超 30+ 文档常规配置项
-  - title: 支持Office及xxx文档
-    details: 全平台格式兼容。<br>多人协作，高可用、高并发。<br>强大的二次开发能力。<br>全平台快速接入。
-  - title: Docker 一键部署
-    details: 企业、政务、教育等行业：提供OA/协同办公/知识库/CRM/云盘/公文系统/公证平台/电子档案/稿件审核/智慧课堂/教研备课/作业/校务/证书考试等场景支持
+  - title: 🚀 在线预览
+    details: 无需下载、无需安装，直接在浏览器中预览各类文档与专业文件，快速、安全、稳定，轻松集成到现有系统。
+  - title: 📁 丰富的格式支持
+    details: 支持 Office、PDF、图片、CAD、OFD、3D 模型、代码文件等 数百种格式，覆盖通用办公与专业业务场景。
+  - title: 🐳 Docker 一键部署
+    details: 基于 Docker 容器化设计，提供开箱即用的部署方式，几分钟完成安装，轻松适配私有化与云原生环境。
 ---

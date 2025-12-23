@@ -2,7 +2,7 @@
 
 安装并启动成功后，简单几部就可以集成文件预览服务到自己的业务系统。
 
-## 依赖项
+## 一、 依赖项
 
 预览参数需要做序列化后 base64 编码，所以会用到 `js-base64` 库
 
@@ -16,7 +16,7 @@
 import { Base64 } from "js-base64";
 ```
 
-## 预览远程文件
+## 二、 预览远程文件
 
 ```js
 // 构造参数
@@ -35,7 +35,7 @@ const previewUrl = `https://yourPreviewService/preview/view?data=${base64}`;
 window.open(previewUrl, "_blank");
 ```
 
-## 预览本地文件
+## 三、 预览本地文件
 
 ```js
 // 构造参数

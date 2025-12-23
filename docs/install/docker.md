@@ -2,13 +2,13 @@
 
 预览服务仅提供 docker 镜像文件，目前支持 AMD64 和 ARM64 架构。
 
-## 拉取镜像
+## 一、 拉取镜像
 
 ```bash
 docker pull basemetas/fileview:latest
 ```
 
-## 启动预览服务
+## 二、 启动预览服务
 
 ```bash
 docker run -itd \    
@@ -18,7 +18,7 @@ docker run -itd \
     basemetas/fileview:latest
 ```
 
-## 访问系统
+## 三、 访问系统
 
 - 访问系统欢迎页 http://ip:9000/
 

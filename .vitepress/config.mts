@@ -23,7 +23,7 @@ export default defineConfig({
   outDir: "./dist",
   srcExclude: ["**/README.md", "**/TODO.md"],
   lang: "zh-CN",
-  title: "开源在线文件预览 - BaseMetas Fileview",
+  title: "开源在线文件预览 - BaseMetas 文件预览",
   description:
     "开源在线文件预览，支持office文件预览，word、excel、ppt在线预览。部署简单，即开即用",
   head: [
@@ -41,7 +41,7 @@ export default defineConfig({
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     logo: "",
-    siteTitle: "首页标题",
+    siteTitle: "BaseMetas 文件预览",
     search: {
       provider: "local",
       options: {},

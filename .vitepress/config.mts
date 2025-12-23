@@ -71,7 +71,7 @@ export default defineConfig({
           collapsed: false,
           items: [
             { text: "安装部署", link: "/docs/install/docker" },
-            { text: "接入方式", link: "/docs/feature/integration" },
+            { text: "服务集成", link: "/docs/feature/integration" },
             { text: "安全设置", link: "/docs/feature/security" },
             { text: "字体安装", link: "/docs/feature/fonts" },
             { text: "性能调优", link: "/docs/feature/performance" },

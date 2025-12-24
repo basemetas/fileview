@@ -23,11 +23,10 @@ export default defineConfig({
   outDir: "./dist",
   srcExclude: ["**/README.md", "**/TODO.md"],
   lang: "zh-CN",
-  title: "开源在线文件预览 - BaseMetas 文件预览",
+  title: "开源免费的在线文件预览 - BaseMetas 文件预览",
   description:
-    "开源在线文件预览，支持office文件预览，word、excel、ppt在线预览。部署简单，即开即用",
+    "开源免费的在线文件预览解决方案。支持Office、PDF、图片、CAD、OFD、3D模型、代码文件等数百种格式。支持私有部署，即开即用",
   head: [
-    ["meta", { name: "baidu-site-verification", content: "codeva-rt8FUjktiP" }],
     [
       "script",
       {
@@ -51,6 +50,8 @@ export default defineConfig({
       { text: "首页", link: "/" },
       { text: "产品介绍", link: "/docs/product/summary" },
       { text: "支持格式", link: "/docs/product/formats" },
+      { text: "安装部署", link: "/docs/install/docker" },
+      { text: "服务集成", link: "/docs/feature/integration" },
       { text: "在线体验", link: "https://file.basemetas.cn", target: "_blank" },
     ],
 

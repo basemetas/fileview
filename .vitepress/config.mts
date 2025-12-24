@@ -50,6 +50,7 @@ export default defineConfig({
     nav: [
       { text: "首页", link: "/" },
       { text: "产品介绍", link: "/docs/product/summary" },
+      { text: "支持格式", link: "/docs/product/formats" },
       { text: "在线体验", link: "https://file.basemetas.cn", target: "_blank" },
     ],
 

@@ -88,6 +88,7 @@ export default defineConfig({
             { text: "文件目录", link: "/docs/product/storage-dir" },
             { text: "长轮询机制", link: "/docs/product/polling" },
             { text: "缓存机制", link: "/docs/product/cache" },
+            { text: "消息机制", link: "/docs/product/event" },
             { text: "全局转换引擎机制", link: "/docs/product/convert-engine" },
             { text: "CAD 转换器", link: "/docs/product/cad-converter" },
             { text: "OFD 转换器", link: "/docs/product/ofd-converter" },

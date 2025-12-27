@@ -16,14 +16,32 @@
 import { Base64 } from "js-base64";
 ```
 
-## 预览远程文件
+## 预览文件
+
+Fileview 支持两种传参方式，你可以任意选择其中一种
+
+#### 使用 query 参数
+
+```js
+// 构造参数
+const url = encodeURIComponent(
+  Base64.encode("https://mydomain.com/myfiles/sample.docx")
+); // 网络文件地址，支持 http/https/ftp
+const fileName = encodeURIComponent(Base64.encode("sample.docx")); // 真实文件名，用作文件类型判断，如果文件地址中没有正确文件后缀，则必须手动传递
+const displayName = encodeURIComponent(Base64.encode("网络示例文档")); // 用于标题栏等展示的文件名，非必需
+
+// 构造预览地址
+const previewUrl = `https://yourPreviewService/preview/view?url=${url}&fileName=${fileName}&displayName=${displayName}`;
+window.open(previewUrl, "_blank");
+```
+
+#### 使用 data 传递 json 数据
 
 ```js
 // 构造参数
 const opts = {
-  path: "", // 服务器上的本地文件路径，例如 /opt/myfiles/sample.docx
   url: "https://mydomain.com/myfiles/sample.docx", // 网络文件地址，支持 http/https/ftp
-  fileName: "sample.docx", // 真实文件名，用作文件类型判断，如果文件地址中没有正确文件后缀，则必须手动传递
+  fileName: "sample.docx", // 真实文件名，用作文件类型辅助判断，如果文件地址中没有正确文件后缀，则需要手动传递
   displayName: "网络示例文档", // 用于标题栏等展示的文件名，非必需
 };
 
@@ -37,19 +55,18 @@ window.open(previewUrl, "_blank");
 
 ## 预览本地文件
 
+预览服务器上的本地文件方式与远程文件基本一致，只是文件路径的传参由 `url` 变为 `path`
+
 ```js
 // 构造参数
-const opts = {
-  path: "/opt/myfiles/sample.docx", // 服务器上的本地文件路径，例如 /opt/myfiles/sample.docx
-  fileName: "sample.docx", // 真实文件名，用作文件类型判断，如果文件地址中没有正确文件后缀，则必须手动传递
-  displayName: "本地示例文档", // 用于标题栏等展示的文件名，非必需
-};
-
-// 对参数进行base64编码
-const base64Data = encodeURIComponent(Base64.encode(JSON.stringify(opts)));
+const path = encodeURIComponent(
+  Base64.encode("/opt/myfiles/sample.docx")
+); // 本地文件地址
+const fileName = encodeURIComponent(Base64.encode("sample.docx")); // 真实文件名，用作文件类型判断，如果文件地址中没有正确文件后缀，则必须手动传递
+const displayName = encodeURIComponent(Base64.encode("本地示例文档")); // 用于标题栏等展示的文件名，非必需
 
 // 构造预览地址
-const previewUrl = `https://yourPreviewService/preview/view?data=${base64Data}`;
+const previewUrl = `https://yourPreviewService/preview/view?path=${path}&fileName=${fileName}&displayName=${displayName}`;
 window.open(previewUrl, "_blank");
 ```
 

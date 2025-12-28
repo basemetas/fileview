@@ -23,7 +23,8 @@ export default defineConfig({
   outDir: "./dist",
   srcExclude: ["**/README.md", "**/TODO.md"],
   lang: "zh-CN",
-  title: "开源免费的在线文件预览解决方案，支持私有部署，即开即用 - BaseMetas 文件预览",
+  title:
+    "开源免费的在线文件预览解决方案，支持私有部署，即开即用 - BaseMetas 文件预览",
   description:
     "开源免费的在线文件预览解决方案。支持Office、PDF、图片、CAD、OFD、3D模型、代码文件等数百种格式。支持私有部署，即开即用",
   head: [
@@ -36,6 +37,7 @@ export default defineConfig({
       },
     ],
     ["script", {}, `LA.init({id:"3OQXOeu7JLFmP27c",ck:"3OQXOeu7JLFmP27c"})`],
+    ["meta", { name: "baidu-site-verification", content: "codeva-4JSWuqisa1" }],
   ],
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config

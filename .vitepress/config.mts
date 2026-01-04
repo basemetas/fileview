@@ -38,7 +38,7 @@ export default defineConfig({
     ],
     ["script", {}, `LA.init({id:"3OQXOeu7JLFmP27c",ck:"3OQXOeu7JLFmP27c"})`],
     ["meta", { name: "baidu-site-verification", content: "codeva-4JSWuqisa1" }],
-    ["meta", { name: "360-site-verification", content: "0b9466329af8570de5999ec724cb88ec" }],
+    ["meta", { name: "360-site-verification", content: "020b0b2ce525bdb06f4f5e885867c3d0" }],
   ],
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config

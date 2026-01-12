@@ -14,44 +14,128 @@
 
 ## 一、容器与 JVM 层调优（两个服务通用）
 
-### 1. 容器资源与堆内存配比
+### 1. 启动脚本位置
 
-**目前启动脚本配置：**
+- **预览服务**: `start-preview-service.sh`
+- **转换服务**: `start-convert-service.sh`
 
-- **convert**（start-convert-service.sh）：`-Xms1g -Xmx4g`
-- **preview**（start-preview-service.sh）：`-Xms512m -Xmx2g`
+### 2. 环境变量配置方式
 
-#### 调优建议（按容器内存来选）
+Fileview 支持通过环境变量动态配置 JVM 参数，推荐在 Docker 部署时使用此方式。
 
-| 容器内存 | convert 堆配置 | preview 堆配置 |
-|---------|---------------|---------------|
-| **2G** | `Xms=512m, Xmx≈1.2g` | `Xms=256m, Xmx≈512m` |
-| **4G** | `Xms=1g, Xmx≈2.5g` | `Xms=512m, Xmx≈1g` |
+#### 2.1 通过 Docker 运行时传参
 
-**原则：**
+```bash
+# 预览服务（4C8G 环境示例）
+docker run -d \
+  -e JAVA_HEAP_MIN=512m \
+  -e JAVA_HEAP_MAX=1536m \
+  -e JAVA_METASPACE_MIN=128m \
+  -e JAVA_METASPACE_MAX=256m \
+  -e JAVA_GC_TYPE=G1GC \
+  -e JAVA_GC_PAUSE_TIME=100 \
+  fileview-preview:latest
 
-> JVM 堆 + 线程栈 + DirectBuffer + native 库 < 容器内存的 **70%** 左右，给 OS 和 LibreOffice 留出空间。
+# 转换服务（4C8G 环境示例）
+docker run -d \
+  -e JAVA_HEAP_MIN=1g \
+  -e JAVA_HEAP_MAX=3g \
+  -e JAVA_METASPACE_MIN=192m \
+  -e JAVA_METASPACE_MAX=384m \
+  -e JAVA_GC_TYPE=G1GC \
+  -e JAVA_GC_PAUSE_TIME=150 \
+  fileview-convert:latest
+```
+
+#### 2.2 通过 docker-compose.yml 配置
+
+```yaml
+services:
+  fileview-preview:
+    image: fileview-preview:latest
+    environment:
+      # JVM 堆内存
+      JAVA_HEAP_MIN: "512m"
+      JAVA_HEAP_MAX: "1536m"
+      # 元空间
+      JAVA_METASPACE_MIN: "128m"
+      JAVA_METASPACE_MAX: "256m"
+      # GC 参数
+      JAVA_GC_TYPE: "G1GC"
+      JAVA_GC_PAUSE_TIME: "100"
+
+  fileview-convert:
+    image: fileview-convert:latest
+    environment:
+      JAVA_HEAP_MIN: "1g"
+      JAVA_HEAP_MAX: "3g"
+      JAVA_METASPACE_MIN: "192m"
+      JAVA_METASPACE_MAX: "384m"
+      JAVA_GC_TYPE: "G1GC"
+      JAVA_GC_PAUSE_TIME: "150"
+```
+
+### 3. 不同环境推荐参数
+
+#### 3.1 预览服务（fileview-preview）
+
+| 参数 | 2C4G | 4C8G | 8C16G | 说明 |
+|------|------|------|-------|------|
+| `JAVA_HEAP_MIN` | 256m | 512m | 1g | 初始堆内存 |
+| `JAVA_HEAP_MAX` | 768m | 1536m | 3g | 最大堆内存 |
+| `JAVA_METASPACE_MIN` | 96m | 128m | 256m | 初始元空间 |
+| `JAVA_METASPACE_MAX` | 192m | 256m | 512m | 最大元空间 |
+| `JAVA_GC_TYPE` | G1GC | G1GC | G1GC | GC 收集器 |
+| `JAVA_GC_PAUSE_TIME` | 150 | 100 | 80 | GC 最大暂停时间(ms) |
+
+#### 3.2 转换服务（fileview-convert）
+
+| 参数 | 2C4G | 4C8G | 8C16G | 说明 |
+|------|------|------|-------|------|
+| `JAVA_HEAP_MIN` | 512m | 1g | 2g | 初始堆内存 |
+| `JAVA_HEAP_MAX` | 1536m | 3g | 6g | 最大堆内存 |
+| `JAVA_METASPACE_MIN` | 128m | 192m | 256m | 初始元空间 |
+| `JAVA_METASPACE_MAX` | 256m | 384m | 512m | 最大元空间 |
+| `JAVA_GC_TYPE` | G1GC | G1GC | G1GC | GC 收集器 |
+| `JAVA_GC_PAUSE_TIME` | 200 | 150 | 100 | GC 最大暂停时间(ms) |
+
+### 4. JVM 参数说明
+
+#### 4.1 堆内存（Heap）
+
+- **作用**: 存储 Java 对象实例
+- **调优原则**:
+  - `Xms` 和 `Xmx` 设为相同值，避免堆动态扩容导致的卡顿
+  - 预留 20-30% 系统内存给操作系统和其他进程
+  - 转换服务因 LibreOffice 进程额外占用，建议预留 30-40% 内存
+
+#### 4.2 元空间（Metaspace）
+
+- **作用**: 存储类元数据（Class Metadata）
+- **调优原则**:
+  - Spring Boot 应用建议最小 128m
+  - 大量使用动态代理/反射的应用可增加到 256m+
+
+#### 4.3 GC 收集器
+
+- **G1GC（推荐）**:
+  - 适合堆内存 > 4GB 的场景
+  - 低暂停时间，适合响应式应用
+  - 通过 `MaxGCPauseMillis` 控制最大暂停时间
+
+- **ParallelGC（备选）**:
+  - 适合批处理/高吞吐场景
+  - 不推荐用于在线服务
 
 **预期收益：**
 
 - 避免 OOMKill，Full GC 次数明显下降
 - 吞吐稳定性提升，延迟尾部显著收敛（**P95/P99 可改善 20–40%**）
 
-### 2. GC 策略
-
-当前已使用：
-
-```bash
--XX:+UseG1GC
--XX:MaxGCPauseMillis=200
-```
-
-在当前负载类型下基本合适，核心是前面的堆大小与并发控制，**GC 参数暂不建议复杂化**。
-
 
 ## 二、转换服务（fileview-convert）的调优方案
 
-### 1. FileEventConsumer 有界线程池参数调优
+### 1. 转换线程池参数调优
 
 **当前 `application-prod.yml` 配置：**
 
@@ -65,7 +149,7 @@ convert:
     conversion-queue-capacity: 200
 ```
 
-这是最关键的一层"**总闸门**"。建议按机器配置和容器资源分环境设置：
+这是最关键的一层“**总闸门**”。建议按机器配置和容器资源分环境设置：
 
 #### 按容器规格调优
 
@@ -73,7 +157,7 @@ convert:
 |---------|----------------|---------------|----------------|
 | **2C / 2G** | 2 | 4 | 100 |
 | **4C / 4G**（默认） | 4 | 8 | 200 |
-| **8C / 8G+** | 8 | 16 | 300 |
+| **8C / 8G+** | 8 | 16 | 500 |
 
 **调优逻辑：**
 
@@ -102,18 +186,27 @@ libreoffice:
     max-process-count: 1
 ```
 
-#### 建议
+#### 按容器规格调优
 
-**CPU 紧张时（2C/4C）：**
+| 参数 | 2C4G | 4C8G | 8C16G | 说明 |
+|------|------|------|-------|------|
+| `port-numbers` | 2002,2003 | 2002,2003,2004,2005 | 2002-2009（8个） | LibreOffice 进程端口列表 |
+| `max-tasks-per-process` | 50 | 100 | 200 | 单个进程最大任务数 |
+| `task-execution-timeout` | 180000 | 240000 | 300000 | 单个任务超时时间(ms) |
+| `max-process-count` | 1 | 2 | 4 | 进程池大小 |
 
-- 保持 `max-process-count: 1`，避免多个 LibreOffice 进程抢占 CPU
-- 如有大量极慢任务，可以把 `task-execution-timeout` 适当下调到 `180000ms`（3 分钟），让极端慢任务尽早失败，释放资源
+**调优说明：**
 
-**CPU 资源充裕时（8C+）：**
+- `port-numbers`: LibreOffice 进程端口列表，**数量 = 并发转换能力**
+- `max-tasks-per-process`: 单个进程最大任务数，超过后自动重启进程
+- `task-execution-timeout`: 单个任务超时时间，复杂文档建议 300s+
+- `max-process-count`: 进程池大小，建议为 `CPU核心数 / 2`
 
-- 可以把 `max-process-count` 提到 `2`
-- `port-numbers` 增加一个端口（如 `2002,2003,2004`），对应多进程提升并发
-- 前提是前面的转换线程池也同步加大，不要只加进程不加线程
+**关键性能影响：**
+
+- 每个 LibreOffice 进程占用约 **200-400MB** 内存
+- `port-numbers` 数量直接决定并发转换能力
+- 2C4G 环境建议最多 2 个进程，避免内存不足
 
 **预期收益：**
 
@@ -158,10 +251,18 @@ libreoffice:
     dir: /opt/fileview/data/libreoffice
     cleanup:
       max-age-hours: 1
-      cron: "0 0 * * * ?"
+      cron: "0 */30 * * * ?"  # 每30分钟执行一次
 ```
 
-#### 建议
+#### 按容器规格调优
+
+| 容器规格 | max-age-hours | cron | 说明 |
+|---------|---------------|------|------|
+| **2C4G** | 1 | `0 */30 * * * ?` | 30分钟清理一次 |
+| **4C8G** | 1 | `0 */15 * * * ?` | 15分钟清理一次 |
+| **8C16G** | 1 | `0 */10 * * * ?` | 10分钟清理一次 |
+
+**调优说明：**
 
 - 磁盘空间或 inode 紧张时，可将 `max-age-hours` 从 1 降到 `0.5`（30 分钟）左右
 - 若磁盘压力不大，可保持当前设置，避免频繁删除/创建带来的 IO 抖动
@@ -185,22 +286,23 @@ spring:
         min-idle: 0
 ```
 
-#### 建议调整为
+#### 按容器规格调优
 
-```yaml
-spring:
-  redis:
-    timeout: 2000ms
-    lettuce:
-      pool:
-        min-idle: 8        # 确保有预热好的连接
-        max-idle: 16
-        max-active: 32     # 或 64，视 Redis 实例能力与服务并发量而定
-```
+| 容器规格 | max-active | max-idle | min-idle | timeout |
+|---------|------------|----------|----------|---------|
+| **2C4G** | 20 | 8 | 2 | 2000ms |
+| **4C8G** | 40 | 16 | 5 | 2000ms |
+| **8C16G** | 80 | 32 | 10 | 2000ms |
 
-**说明：**
+**调优说明：**
 
-转换服务对 Redis 的调用主要是去重和缓存，延迟过高会拖慢消费速度，适度加大连接池有利于稳定性。
+- `min-idle`: 确保有预热好的连接，避免冷启动时连接建立延迟
+- `max-active`: 最大连接数，建议为 `CPU核心数 * 10`
+- `timeout`: 转换服务对 Redis 的调用主要是去重和缓存，延迟过高会拖慢消费速度
+
+**预期收益：**
+
+> 适度加大连接池有利于稳定性，在高并发缓存读/写场景下，减少连接池耗尽和长时间等待。
 
 
 ## 三、预览服务（fileview-preview）的调优方案
@@ -222,13 +324,15 @@ rocketmq:
 
 | 容器规格 | consume-thread-min | consume-thread-max |
 |---------|-------------------|-------------------|
-| **2C** | 2 | 8 |
-| **4C** | 4 | 16 |
-| **8C** | 8 | 32 |
+| **2C4G** | 5 | 20 |
+| **4C8G** | 10 | 40 |
+| **8C16G** | 20 | 80 |
 
-**调优思路：**
+**调优说明：**
 
- 如果观察到 CPU 很紧，而 MQ 消费线程很多，可以先把 `consume-thread-max` 降下来
+- 消费线程数直接影响下载任务并发处理能力
+- `min` 建议为 `CPU核心数`，`max` 建议为 `CPU核心数 * 10`
+- 如果观察到 CPU 很紧，而 MQ 消费线程很多，可以先把 `consume-thread-max` 降下来
 - 如果 CPU 还有余量，且下载/预览事件堆积，可以适当提高 `consume-thread-max` 增加吞吐
 
 #### 1.2 Redis Streams 事件引擎调优（当 `mq.engine=redis` 时）
@@ -432,19 +536,19 @@ spring:
           min-idle: 5
 ```
 
-#### 建议调整为
+#### 按容器规格调优
 
-```yaml
-spring:
-  data:
-    redis:
-      timeout: 2000ms     # 或 3000ms
-      lettuce:
-        pool:
-          min-idle: 8
-          max-idle: 16
-          max-active: 32  # 或 64，取决于预览接口并发
-```
+| 容器规格 | max-active | max-idle | min-idle | timeout |
+|---------|------------|----------|----------|---------|
+| **2C4G** | 20 | 10 | 5 | 3000ms |
+| **4C8G** | 40 | 20 | 10 | 3000ms |
+| **8C16G** | 80 | 40 | 20 | 3000ms |
+
+**调优说明：**
+
+- `max-active`: 最大连接数，建议为 `CPU核心数 * 10`
+- `max-idle`: 空闲连接数，建议为 `max-active / 2`
+- `min-idle`: 最小保持连接，避免冷启动时连接建立延迟
 
 **预期收益：**
 
@@ -492,27 +596,30 @@ fileview:
 fileview:
   network:
     download:
-      connect-timeout: 3000
-      read-timeout: 60000
-      max-retry: 3
-      retry-base-delay: 300
-      buffer-size: 65536
+      connect-timeout: 5000
+      read-timeout: 120000
+      max-retry: 5
+      retry-base-delay: 500
+      buffer-size: 131072  # 128KB
 ```
 
-#### 建议
+#### 按容器规格调优
 
-**带宽紧张且源站不稳定时：**
+| 容器规格 | buffer-size | connect-timeout | read-timeout | max-retry |
+|---------|-------------|-----------------|--------------|------------|
+| **2C4G** | 131072 (128KB) | 5000 | 120000 | 5 |
+| **4C8G** | 262144 (256KB) | 5000 | 120000 | 5 |
+| **8C16G** | 524288 (512KB) | 5000 | 120000 | 5 |
 
-- `max-retry` 可以从 3 降到 2，减少无谓重试
-- 若单文件体积普遍不大，可把 `buffer-size` 从 64KB 调低到 32KB，减小瞬时带宽和内存峰值
+**调优说明：**
 
-**若带宽富余、下载任务是瓶颈：**
-
-- 可以把 `buffer-size` 提高到 128KB，提升单连接吞吐（注意观察内存）
+- `buffer-size`: 下载缓冲区大小，影响网络文件下载速度
+- `read-timeout`: 读取超时，大文件建议 120s+
+- `max-retry`: 失败重试次数，网络不稳定环境可增加
 
 **预期收益：**
 
-> 更合理的下载参数可以在有限带宽下减少相互"抢带宽"的情况，减少超时与重试。
+> 更合理的下载参数可以在有限带宽下减少相互“抢带宽”的情况，减少超时与重试。
 
 ### 5. 预览缓存策略
 
@@ -523,19 +630,26 @@ fileview:
   preview:
     cache:
       enabled: true
-      default-ttl-hours: 24
       max-cache-size: 1000
+      conversion:
+        success-ttl: 864000  # 240小时（10天）
+        failed-ttl: 60       # 60秒
+      direct-preview-ttl: 864000
 ```
 
-#### 调优方向
+#### 按容器规格调优
 
-**热点文件较多时：**
+| 容器规格 | max-cache-size | success-ttl | failed-ttl |
+|---------|----------------|-------------|------------|
+| **2C4G** | 1000 | 864000 (10天) | 60 |
+| **4C8G** | 2000 | 864000 (10天) | 60 |
+| **8C16G** | 5000 | 864000 (10天) | 60 |
 
-- 可以适度提升 `max-cache-size`（如 `2000–5000`），提高命中率
+**调优说明：**
 
-**文件基本"一次性预览"时：**
-
-- 可以把 TTL 降到 `12h` 或更低，减少 Redis 长期占用
+- `max-cache-size`: 内存缓存条目数，单个条目约 2-5KB
+- `success-ttl`: 成功预览结果缓存时长（秒）
+- `failed-ttl`: 失败结果短时缓存，避免重复尝试
 
 **预期收益：**
 
@@ -543,7 +657,219 @@ fileview:
 
 
 
-## 四、总结
+## 四、性能监控指标
+
+### 1. JVM 监控
+
+#### 1.1 查看堆内存使用情况
+
+```bash
+# 进入容器
+docker exec -it fileview-convert bash
+
+# 查看 JVM 进程 PID
+jps -l
+
+# 查看堆内存详情
+jmap -heap <PID>
+
+# 查看 GC 统计
+jstat -gcutil <PID> 1000 10
+```
+
+#### 1.2 关键指标
+
+| 指标 | 正常范围 | 异常阈值 | 处理建议 |
+|------|---------|---------|----------|
+| 堆内存使用率 | 50-70% | >85% | 增加 `Xmx`，检查内存泄漏 |
+| Old Gen 占比 | <70% | >85% | 调整 GC 参数，排查内存泄漏 |
+| Full GC 频率 | <5次/小时 | >10次/小时 | 增加堆内存，优化对象创建 |
+| GC 暂停时间 | <200ms | >500ms | 调整 `MaxGCPauseMillis` |
+
+### 2. 应用监控
+
+#### 2.1 预览服务关键指标
+
+```bash
+# 查看 Redis 连接数
+redis-cli INFO clients | grep connected_clients
+
+# 查看下载任务队列长度
+redis-cli LLEN stream:download-tasks
+
+# 查看缓存命中率
+# 在应用日志中搜索 "Cache Hit" / "Cache Miss"
+```
+
+#### 2.2 转换服务关键指标
+
+```bash
+# 查看 LibreOffice 进程数
+ps aux | grep soffice | wc -l
+
+# 查看转换任务队列长度
+redis-cli LLEN stream:convert-tasks
+
+# 查看临时文件占用
+du -sh /opt/fileview/data/libreoffice
+```
+
+### 3. 系统资源监控
+
+```bash
+# CPU 使用率
+top -bn1 | grep "Cpu(s)"
+
+# 内存使用情况
+free -h
+
+# 磁盘 IO
+iostat -x 1 5
+
+# 网络流量
+iftop -i eth0
+```
+
+
+## 五、常见问题排查
+
+### 1. 转换服务 OOM（内存溢出）
+
+#### 症状
+
+- 日志出现 `java.lang.OutOfMemoryError`
+- 容器频繁重启
+- 生成 `heap_dump.hprof` 文件
+
+#### 排查步骤
+
+1. **查看堆内存配置**
+
+```bash
+docker exec fileview-convert env | grep JAVA_HEAP
+```
+
+2. **分析堆转储文件**
+
+```bash
+# 使用 MAT (Memory Analyzer Tool) 分析
+# 或使用 jmap
+jmap -dump:live,format=b,file=heap.hprof <PID>
+```
+
+3. **解决方案**
+
+- **临时方案**: 增加 `JAVA_HEAP_MAX`（如 2C4G → 1536m 改为 2g）
+- **长期方案**:
+  - 检查 `port-numbers` 数量，减少 LibreOffice 进程
+  - 降低 `conversion-max-pool-size`，控制并发
+  - 升级服务器资源到 4C8G
+
+---
+
+### 2. 转换超时
+
+#### 症状
+
+- 日志显示 `ConversionTimeoutException`
+- 前端轮询超时返回 `CONVERTING` 状态
+
+#### 排查步骤
+
+1. **检查超时配置**
+
+```yaml
+# fileview-convert/application-prod.yml
+libreoffice:
+  jod:
+    task-execution-timeout: 180000  # 当前值
+convert:
+  consumer:
+    conversion-timeout: 120000  # 当前值
+```
+
+2. **查看 LibreOffice 进程状态**
+
+```bash
+ps aux | grep soffice
+```
+
+3. **解决方案**
+
+- 增加超时时间到 240s 或 300s
+- 检查文件是否过大（>50MB 建议拆分）
+- 检查文件是否损坏或加密
+
+---
+
+### 3. 预览服务下载缓慢
+
+#### 症状
+
+- 网络文件下载耗时过长
+- `DOWNLOADING` 状态持续超过 30s
+
+#### 排查步骤
+
+1. **检查网络配置**
+
+```yaml
+fileview:
+  network:
+    download:
+      buffer-size: 131072  # 当前缓冲区大小
+      read-timeout: 120000
+```
+
+2. **测试网络连通性**
+
+```bash
+# 进入容器测试下载速度
+curl -o /dev/null -w "%{speed_download}\n" <文件URL>
+```
+
+3. **解决方案**
+
+- 增加 `buffer-size` 到 256KB 或 512KB
+- 检查出口带宽限制
+- 对于内网文件，配置 `trusted-sites` 跳过安全校验
+
+---
+
+### 4. Redis 连接池耗尽
+
+#### 症状
+
+- 日志出现 `Could not get a resource from the pool`
+- 请求响应变慢或超时
+
+#### 排查步骤
+
+1. **查看连接池配置**
+
+```bash
+# 查看 Redis 当前连接数
+redis-cli INFO clients | grep connected_clients
+
+# 查看应用配置的连接池大小
+grep "max-active" application-prod.yml
+```
+
+2. **检查是否有连接泄漏**
+
+```bash
+# 查看应用日志中是否有未释放连接的警告
+grep "Connection leak" logs/*.log
+```
+
+3. **解决方案**
+
+- 增加 `max-active`（2C4G: 20 → 40）
+- 检查代码是否正确关闭 Redis 连接
+- 检查 Redis 服务器 `maxclients` 配置
+
+
+## 六、总结
 
 | 优先级 | 调优层面 | 关键配置项 | 预期收益 |
 |--------|---------|-----------|---------|

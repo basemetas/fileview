@@ -28,6 +28,7 @@ export default defineConfig({
   description:
     "开源免费的在线文件预览解决方案。支持Office、PDF、图片、CAD、OFD、3D模型、代码文件等数百种格式。支持私有部署，即开即用",
   head: [
+    ["link", { rel: "icon", type: "image/png", href: "/favicon.png" }],
     [
       "script",
       {
@@ -38,7 +39,13 @@ export default defineConfig({
     ],
     ["script", {}, `LA.init({id:"3OQXOeu7JLFmP27c",ck:"3OQXOeu7JLFmP27c"})`],
     ["meta", { name: "baidu-site-verification", content: "codeva-4JSWuqisa1" }],
-    ["meta", { name: "360-site-verification", content: "020b0b2ce525bdb06f4f5e885867c3d0" }],
+    [
+      "meta",
+      {
+        name: "360-site-verification",
+        content: "020b0b2ce525bdb06f4f5e885867c3d0",
+      },
+    ],
   ],
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
@@ -111,7 +118,9 @@ export default defineConfig({
     ],
 
     footer: {
-      copyright: "Copyright © 2025 BaseMetas",
+      message:
+        `Copyright © ${new Date().getFullYear()} BaseMetas. All rights reserved.`,
+      copyright: "苏ICP备2026000303号-1",
     },
 
     docFooter: {

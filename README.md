@@ -122,7 +122,7 @@ npm run dev
 
 | 头像 | 用户 | 贡献次数 |
 | :---: | :--- | :---: |
-| <img src="https://avatars.githubusercontent.com/u/1859150?v=4" width="50" height="50"> | [pangnate](https://github.com/pangnate) | 164 |
-| <img src="https://avatars.githubusercontent.com/u/104605365?v=4" width="50" height="50"> | [njxyf007](https://github.com/njxyf007) | 48 |
+| <img src="https://avatars.githubusercontent.com/u/1859150?v=4" width="50" height="50"> | [pangnate](https://github.com/pangnate) | 172 |
+| <img src="https://avatars.githubusercontent.com/u/104605365?v=4" width="50" height="50"> | [njxyf007](https://github.com/njxyf007) | 52 |
 
 <!-- AGGREGATED_CONTRIBUTORS_END -->

@@ -6,6 +6,10 @@
   <a href="https://github.com/BaseMetas/fileview/stargazers"><img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/BaseMetas/fileview?style=flat-square"></a>
   <a href="https://hub.docker.com/r/basemetas/fileview/tags"><img alt="Docker Pulls" src="https://img.shields.io/docker/pulls/basemetas/fileview"></a>
   <a href="https://github.com/BaseMetas/fileview/issues"><img src="https://img.shields.io/github/issues-closed/BaseMetas/fileview?style=flat-square" alt="closed issues"></a>
+  <p>
+    <a style="font-size:16px;font-weight:bold;" href="https://basemetas.com/" target="_blank">企业级高性能高可用方案</a> -  
+    <a style="font-size:16px;font-weight:bold;" href="https://mp.weixin.qq.com/s/NXJDCJt4zqHtUYE3k3G6cQ" target="_blank">体验官招募计划</a>
+  </p>
 </div>
 
 ## 特性
